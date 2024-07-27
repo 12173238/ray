@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>查詢報表</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #e9ecef;
+        }
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: auto;
+            overflow: hidden;
+            padding: 20px;
+        }
+        header {
+            background: #007bff;
+            color: #fff;
+            padding: 20px 0;
+            border-bottom: #0056b3 3px solid;
+            text-align: center;
+            border-radius: 8px;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        button {
+            background: #007bff;
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .error {
+            color: #dc3545;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+        .reports {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .reports ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .reports li {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 10px;
+        }
+        .reports h3 {
+            margin: 0;
+            font-size: 20px;
+            color: #007bff;
+        }
+        .reports pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .update-form {
+            text-align: center;
+            margin-top: 20px;
+        }
+        @media (max-width: 768px) {
+            .container {
+                width: 100%;
+                padding: 10px;
+            }
+            input[type="text"] {
+                width: calc(100% - 22px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>查詢報告</h1>
+    </header>
+    <div class="container">
+        <form method="post">
+            {% csrf_token %}
+            <label for="stock_code">股票代碼:</label>
+            <input type="text" id="stock_code" name="stock_code" placeholder="輸入股票代碼">
+            <button type="submit">查詢</button>
+        </form>
+        
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+
+        {% if reports %}
+            <div class="reports">
+                <h2>報告</h2>
+                <ul>
+                    {% for report in reports %}
+                        <li>
+                            <h3>{{ report.report_type }}</h3>
+                            <pre>{{ report.content }}</pre>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <form action="{% url 'update_reports' %}" method="post" class="update-form">
+            {% csrf_token %}
+            <button type="submit">更新報告</button>
+        </form>
+    </div>
+</body>
+</html>

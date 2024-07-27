@@ -1,0 +1,88 @@
+<!-- search.html -->
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>股票搜尋</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            border: 1px solid black;
+            padding: 8px 2px;
+            text-align: center;
+
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; margin-top: 20px;">股票搜尋</h1>
+    <form method="post" style="max-width: 400px; margin: 0 auto; background-color: #f9f9f9; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+        {% csrf_token %}
+        <div style="margin-bottom: 10px;">
+            <label for="stock_number" style="font-weight: bold;">股票代號:</label>
+            <input type="text" id="stock_number" name="stock_number" required style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+        </div>
+        <div style="margin-bottom: 10px;">
+            <label for="year" style="font-weight: bold;">年度(例如 112):</label>
+            <input type="text" id="year" name="year" required style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+        </div>
+        <div style="margin-bottom: 10px;">
+            <label for="season" style="font-weight: bold;">季節(例如 2):</label>
+            <input type="text" id="season" name="season" required style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+        </div>
+        <button type="submit" style="background-color: #4023d4; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; width: 100%;">搜尋</button>
+    </form>
+    
+
+    {% if df is not None %}
+        <h2>股票代號 {{ stock_number }} 在年度 {{ year }} 季度 {{ season }} 的綜合損益表:</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th colspan="9">{{ year }}年第{{ season }}季</th>
+                </tr>
+                <tr>
+                    <th colspan="9" style="text-align: right;">單位:新台幣仟元</th>
+                </tr>
+                <tr>
+                    <th colspan="1" style="text-align: left;">會計項目</th>
+                    <th colspan="2">{{ year }}年第{{ season }}季</th>
+                    <th colspan="2">{{ year|add:"-1" }}年第{{ season }}季</th>
+                    <th colspan="2">{{ year }}年01月01日至{{ year }}年06月30日</th>
+                    <th colspan="2">{{ year|add:"-1" }}年01月01日至{{ year|add:"-1" }}年06月30日</th>
+                </tr>
+                <tr>
+                    <th> </th>
+                    <th>金額</th>
+                    <th>%</th>
+                    <th>金額</th>
+                    <th>%</th>
+                    <th>金額</th>
+                    <th>%</th>
+                    <th>金額</th>
+                    <th>%</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in df.values %}
+                    <tr>
+                        {% for cell in row|slice:"0:-1" %}
+                            <td>{{ cell }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</body>
+</html>

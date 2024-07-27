@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Reports</title>
+</head>
+<body>
+    <h1>Stock Reports for {{ stock_code }}</h1>
+    
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Report Number</th>
+                <th>Report Data</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for report in reports %}
+                <tr>
+                    <td>{{ report.0 }}</td>
+                    <td>
+                        <pre>{{ report.1|safe }}</pre>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

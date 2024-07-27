@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>首頁</h1>
+    <table cellpadding="8" border="1">
+        <tr>
+            <th>編號</th>
+            <th>{{ stockid }}</th>
+            <th>{{ PL }}</th>
+        </tr>
+        {% for stock in stock %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ stock.stockid }}</td>
+            <td>{{ stock.PL }}</td>
+           
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+
+</html>
