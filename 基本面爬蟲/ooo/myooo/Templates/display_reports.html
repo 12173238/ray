@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>顯示報告</title>
     <style>
         body {
@@ -14,7 +14,6 @@
             background-color: #f5f5f5;
             overflow-x: hidden;
         }
-
         .header {
             display: flex;
             justify-content: center;
@@ -26,21 +25,18 @@
             border-bottom: 2px solid #e0e0e0;
             padding: 10px 20px;
         }
-
         .header h1 {
             font-size: 2.5em;
             font-weight: bold;
             margin: 0;
             color: #004d99;
         }
-
         .dropdown {
             position: absolute;
             right: 20px;
             top: 50%;
             transform: translateY(-50%);
         }
-
         .dropbtn {
             background-color: #004d99;
             color: white;
@@ -52,12 +48,10 @@
             transition: background-color 0.3s ease, box-shadow 0.3s ease;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
-
         .dropbtn:hover {
             background-color: #003d80;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
-
         .dropdown-content {
             display: none;
             position: absolute;
@@ -69,7 +63,6 @@
             top: 100%;
             right: 0;
         }
-
         .dropdown-content a {
             color: #333;
             padding: 10px 12px;
@@ -79,15 +72,12 @@
             border-bottom: 1px solid #ddd;
             transition: background-color 0.3s ease;
         }
-
         .dropdown-content a:hover {
             background-color: #f9f9f9;
         }
-
         .dropdown:hover .dropdown-content {
             display: block;
         }
-
         h2 {
             margin-top: 30px;
             font-size: 1.8em;
@@ -98,7 +88,6 @@
             text-align: center;
             font-weight: bold;
         }
-
         table {
             width: 100%;
             margin: 20px auto;
@@ -107,35 +96,28 @@
             border-radius: 8px;
             background-color: #ffffff;
         }
-
-        th,
-        td {
+        th, td {
             border: 1px solid #ddd;
             padding: 12px;
             text-align: left;
             word-wrap: break-word;
         }
-
         th {
             background-color: #004d99;
             color: white;
             text-transform: uppercase;
         }
-
         td:first-child {
             white-space: nowrap;
             min-width: 200px; /* 設置第一個欄位的最小寬度 */
             max-width: 500px; /* 設置第一個欄位的最大寬度 */
         }
-
         tr:nth-child(even) {
             background-color: #f9f9f9;
         }
-
         tr:hover {
             background-color: #e0e0e0;
         }
-
         .container {
             width: 90%;
             max-width: 1200px;
@@ -145,14 +127,12 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
         }
-
         .no-report {
             text-align: center;
             margin-top: 40px;
             color: #6c757d;
             font-size: 1.2em;
         }
-
         #topBtn {
             display: none;
             position: fixed;
@@ -170,12 +150,29 @@
             transition: background-color 0.3s ease, box-shadow 0.3s ease;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
-
         #topBtn:hover {
             background-color: #003d80;
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
         }
-
+        #backBtn {
+            background-color: #0056b3;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            text-align: center;
+            display: inline-block;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+        #backBtn:hover {
+            background-color: #0056b3;
+        }
         .report-content {
             margin-top: 20px;
             padding: 20px;
@@ -185,7 +182,6 @@
         }
     </style>
 </head>
-
 <body>
     <div class="container">
         <div class="header">
@@ -199,6 +195,7 @@
                 </div>
             </div>
         </div>
+        <button id="backBtn" onclick="window.location.href='{% url 'query_report' %}'">返回查詢</button>
         {% if reports %}
         {% for report in reports %}
         <h2 id="{{ report.report_type }}">{{ report.report_type }}</h2>
@@ -226,5 +223,4 @@
         }
     </script>
 </body>
-
 </html>
