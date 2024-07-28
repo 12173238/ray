@@ -155,7 +155,10 @@
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
         }
         #backBtn {
-            background-color: #0056b3;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #004d99;
             color: white;
             border: none;
             padding: 10px 15px;
@@ -164,10 +167,6 @@
             font-size: 16px;
             transition: background-color 0.3s ease;
             text-align: center;
-            display: inline-block;
-            position: fixed;
-            top: 20px;
-            right: 20px;
             z-index: 100;
         }
         #backBtn:hover {
@@ -195,7 +194,7 @@
                 </div>
             </div>
         </div>
-        <button id="backBtn" onclick="window.location.href='{% url 'query_report' %}'">返回查詢</button>
+        <button id="backBtn" onclick="window.location.href='../query/'">返回查詢</button>
         {% if reports %}
         {% for report in reports %}
         <h2 id="{{ report.report_type }}">{{ report.report_type }}</h2>
