@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>顯示報告</title>
+    <title>顯示報表</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -16,32 +16,34 @@
         }
         .header {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            margin-top: 20px;
-            position: relative;
+            position: fixed; /* 固定在頁面上方 */
+            top: 0;
+            left: 0;
+            right: 0;
             background-color: #ffffff;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             border-bottom: 2px solid #e0e0e0;
             padding: 10px 20px;
+            z-index: 100; /* 確保 header 在最上層 */
         }
         .header h1 {
-            font-size: 2.5em;
+            font-size: 2em;
             font-weight: bold;
             margin: 0;
             color: #004d99;
+            flex-grow: 1; /* 使標題自動擴展 */
+            text-align: center;
         }
         .dropdown {
-            position: absolute;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
+            position: relative; /* 改為相對定位 */
         }
         .dropbtn {
             background-color: #004d99;
             color: white;
-            padding: 10px 15px;
-            font-size: 1em;
+            padding: 8px 12px;
+            font-size: 0.9em;
             border: none;
             cursor: pointer;
             border-radius: 5px;
@@ -58,10 +60,10 @@
             background-color: #ffffff;
             min-width: 180px;
             box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
-            z-index: 1;
+            z-index: 101; /* 確保下拉選單在按鈕上方 */
             border-radius: 5px;
             top: 100%;
-            right: 0;
+            left: 0;
         }
         .dropdown-content a {
             color: #333;
@@ -79,7 +81,7 @@
             display: block;
         }
         h2 {
-            margin-top: 30px;
+            margin-top: 100px; /* 留出 header 的高度 */
             font-size: 1.8em;
             border-bottom: 2px solid #004d99;
             display: inline-block;
@@ -90,7 +92,6 @@
         }
         table {
             width: 100%;
-            margin: 20px auto;
             border-collapse: collapse;
             box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
@@ -119,9 +120,9 @@
             background-color: #e0e0e0;
         }
         .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 0 auto;
+            width: 95%; /* 增加寬度以顯示更多內容 */
+            max-width: 1400px; /* 增加最大寬度 */
+            margin: 120px auto 20px; /* 頂部留空間以顯示 header */
             padding: 20px;
             background-color: #ffffff;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -138,7 +139,7 @@
             position: fixed;
             bottom: 20px;
             right: 30px;
-            z-index: 99;
+            z-index: 101; /* 確保按鈕在最上層 */
             font-size: 18px;
             border: none;
             outline: none;
@@ -155,46 +156,35 @@
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
         }
         #backBtn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
             background-color: #004d99;
             color: white;
             border: none;
-            padding: 10px 15px;
+            padding: 8px 12px; /* 調整按鈕大小 */
             border-radius: 4px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 0.9em; /* 調整按鈕字體大小 */
             transition: background-color 0.3s ease;
             text-align: center;
-            z-index: 100;
         }
         #backBtn:hover {
             background-color: #0056b3;
         }
-        .report-content {
-            margin-top: 20px;
-            padding: 20px;
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>基本面報表</h1>
-            <div class="dropdown">
-                <button class="dropbtn">目錄</button>
-                <div class="dropdown-content">
-                    {% for report in reports %}
-                    <a href="#{{ report.report_type }}">{{ report.report_type }}</a>
-                    {% endfor %}
-                </div>
+    <div class="header">
+        <div class="dropdown">
+            <button class="dropbtn">目錄</button>
+            <div class="dropdown-content">
+                {% for report in reports %}
+                <a href="#{{ report.report_type }}">{{ report.report_type }}</a>
+                {% endfor %}
             </div>
         </div>
+        <h1>基本面報表</h1>
         <button id="backBtn" onclick="window.location.href='../query/'">返回查詢</button>
+    </div>
+    <div class="container">
         {% if reports %}
         {% for report in reports %}
         <h2 id="{{ report.report_type }}">{{ report.report_type }}</h2>

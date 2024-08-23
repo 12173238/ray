@@ -58,7 +58,7 @@ def save_reports(stock_code, reports):
         stock.save()
 
 def validate_and_save_reports_from_csv(csv_file_path, batch_size=10):
-    df = pd.read_csv(csv_file_path)
+    df = pd.read_csv(csv_file_path,encoding='big5')
     stock_codes = df['code'].tolist()
 
     for i in range(0, len(stock_codes), batch_size):
