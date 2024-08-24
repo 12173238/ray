@@ -46,16 +46,16 @@ def fetch_reports(stock_code):
 
 def save_reports(stock_code, reports):
     if len(reports) >= 3:
-        try:
-            stock = Stock.objects.get(stock_code=stock_code)
-        except Stock.DoesNotExist:
-            stock = Stock(stock_code=stock_code)
-        
-        # 直接將報告內容儲存為 HTML 格式
+        # 刪除所有記錄
+        Stock.objects.all().delete()
+
+        # 創建新資料
+        stock = Stock(stock_code=stock_code)
         stock.B = reports[0]
         stock.P = reports[1]
         stock.C = reports[2]
         stock.save()
+
 
 def validate_and_save_reports_from_csv(csv_file_path, batch_size=10):
     df = pd.read_csv(csv_file_path,encoding='big5')
@@ -137,9 +137,22 @@ def query_report(request):
 def update_reports(request):
     csv_dir_path = os.path.join(os.path.dirname(__file__), 'csv')
     csv_files = [f'stock{i}.csv' for i in range(1, 6)]  # stock1.csv 到 stock5.csv
+    update_messages = []
     
     for csv_file in csv_files:
         csv_file_path = os.path.join(csv_dir_path, csv_file)
         validate_and_save_reports_from_csv(csv_file_path, batch_size=10)  # 調整批次大小
+        update_messages.append(f'{csv_file} 更新成功！')
     
-    return render(request, 'update_reports.html', {'message': 'Reports updated successfully!'})
+    return render(request, 'update_reports.html', {'messages': update_messages})
+
+'''
+def B(request):
+
+
+def P(request):
+
+
+def C(request):
+
+'''
