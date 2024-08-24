@@ -135,6 +135,11 @@ def query_report(request):
 
 
 def update_reports(request):
-    csv_file_path = os.path.join(os.path.dirname(__file__), 'csv', 'stock.csv')
-    validate_and_save_reports_from_csv(csv_file_path, batch_size=10)  # 調整批次大小
+    csv_dir_path = os.path.join(os.path.dirname(__file__), 'csv')
+    csv_files = [f'stock{i}.csv' for i in range(1, 6)]  # stock1.csv 到 stock5.csv
+    
+    for csv_file in csv_files:
+        csv_file_path = os.path.join(csv_dir_path, csv_file)
+        validate_and_save_reports_from_csv(csv_file_path, batch_size=10)  # 調整批次大小
+    
     return render(request, 'update_reports.html', {'message': 'Reports updated successfully!'})
