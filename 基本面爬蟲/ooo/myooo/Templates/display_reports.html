@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,11 +15,13 @@
             background-color: #f5f5f5;
             overflow-x: hidden;
         }
+
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: fixed; /* 固定在頁面上方 */
+            position: fixed;
+            /* 固定在頁面上方 */
             top: 0;
             left: 0;
             right: 0;
@@ -26,19 +29,25 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             border-bottom: 2px solid #e0e0e0;
             padding: 10px 20px;
-            z-index: 100; /* 確保 header 在最上層 */
+            z-index: 100;
+            /* 確保 header 在最上層 */
         }
+
         .header h1 {
             font-size: 2em;
             font-weight: bold;
             margin: 0;
             color: #004d99;
-            flex-grow: 1; /* 使標題自動擴展 */
+            flex-grow: 1;
+            /* 使標題自動擴展 */
             text-align: center;
         }
+
         .dropdown {
-            position: relative; /* 改為相對定位 */
+            position: relative;
+            /* 改為相對定位 */
         }
+
         .dropbtn {
             background-color: #004d99;
             color: white;
@@ -50,21 +59,25 @@
             transition: background-color 0.3s ease, box-shadow 0.3s ease;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
+
         .dropbtn:hover {
             background-color: #003d80;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
+
         .dropdown-content {
             display: none;
             position: absolute;
             background-color: #ffffff;
             min-width: 180px;
             box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
-            z-index: 101; /* 確保下拉選單在按鈕上方 */
+            z-index: 101;
+            /* 確保下拉選單在按鈕上方 */
             border-radius: 5px;
             top: 100%;
             left: 0;
         }
+
         .dropdown-content a {
             color: #333;
             padding: 10px 12px;
@@ -74,14 +87,18 @@
             border-bottom: 1px solid #ddd;
             transition: background-color 0.3s ease;
         }
+
         .dropdown-content a:hover {
             background-color: #f9f9f9;
         }
+
         .dropdown:hover .dropdown-content {
             display: block;
         }
+
         h2 {
-            margin-top: 100px; /* 留出 header 的高度 */
+            margin-top: 100px;
+            /* 留出 header 的高度 */
             font-size: 1.8em;
             border-bottom: 2px solid #004d99;
             display: inline-block;
@@ -90,6 +107,7 @@
             text-align: center;
             font-weight: bold;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -97,49 +115,64 @@
             border-radius: 8px;
             background-color: #ffffff;
         }
-        th, td {
+
+        th,
+        td {
             border: 1px solid #ddd;
             padding: 12px;
             text-align: left;
             word-wrap: break-word;
         }
+
         th {
             background-color: #004d99;
             color: white;
             text-transform: uppercase;
         }
+
         td:first-child {
             white-space: nowrap;
-            min-width: 200px; /* 設置第一個欄位的最小寬度 */
-            max-width: 500px; /* 設置第一個欄位的最大寬度 */
+            min-width: 200px;
+            /* 設置第一個欄位的最小寬度 */
+            max-width: 500px;
+            /* 設置第一個欄位的最大寬度 */
         }
+
         tr:nth-child(even) {
             background-color: #f9f9f9;
         }
+
         tr:hover {
             background-color: #e0e0e0;
         }
+
         .container {
-            width: 95%; /* 增加寬度以顯示更多內容 */
-            max-width: 1400px; /* 增加最大寬度 */
-            margin: 120px auto 20px; /* 頂部留空間以顯示 header */
+            width: 95%;
+            /* 增加寬度以顯示更多內容 */
+            max-width: 1400px;
+            /* 增加最大寬度 */
+            margin: 120px auto 20px;
+            /* 頂部留空間以顯示 header */
             padding: 20px;
             background-color: #ffffff;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
         }
+
         .no-report {
             text-align: center;
             margin-top: 40px;
             color: #6c757d;
             font-size: 1.2em;
         }
+
         #topBtn {
             display: none;
             position: fixed;
             bottom: 20px;
             right: 30px;
-            z-index: 101; /* 確保按鈕在最上層 */
+            z-index: 101;
+            /* 確保按鈕在最上層 */
             font-size: 18px;
             border: none;
             outline: none;
@@ -151,26 +184,32 @@
             transition: background-color 0.3s ease, box-shadow 0.3s ease;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
+
         #topBtn:hover {
             background-color: #003d80;
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
         }
+
         #backBtn {
             background-color: #004d99;
             color: white;
             border: none;
-            padding: 8px 12px; /* 調整按鈕大小 */
+            padding: 8px 12px;
+            /* 調整按鈕大小 */
             border-radius: 4px;
             cursor: pointer;
-            font-size: 0.9em; /* 調整按鈕字體大小 */
+            font-size: 0.9em;
+            /* 調整按鈕字體大小 */
             transition: background-color 0.3s ease;
             text-align: center;
         }
+
         #backBtn:hover {
             background-color: #0056b3;
         }
     </style>
 </head>
+
 <body>
     <div class="header">
         <div class="dropdown">
@@ -184,6 +223,10 @@
         <h1>基本面報表</h1>
         <button id="backBtn" onclick="window.location.href='../query/'">返回查詢</button>
     </div>
+
+
+
+
     <div class="container">
         {% if reports %}
         {% for report in reports %}
@@ -196,6 +239,9 @@
         <p class="no-report">未找到報告。</p>
         {% endif %}
     </div>
+
+
+
     <button onclick="topFunction()" id="topBtn" title="回到頂部">Top</button>
     <script>
         window.onscroll = function () { scrollFunction() };
@@ -212,4 +258,5 @@
         }
     </script>
 </body>
+
 </html>
