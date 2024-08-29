@@ -166,10 +166,11 @@ def query_report(request):
                         '資產總額': extract_value('資產總額'),
                         '應收帳款淨額': extract_value('應收帳款淨額'),  # 取第三列
                         '營業收入合計': extract_value('營業收入合計'),
-                        '毛利率': extract_value('營業毛利（毛損）', column_index=2),  # 取第三列
+                        '毛利率': extract_value('營業毛利（毛損）', column_index=2),  
                         '營業利益率': extract_value('營業利益（損失）', column_index=2),
-                        '本期淨利（淨損）': extract_value('本期淨利（淨損）'),  # 取第三列
-                        '基本每股盈餘': extract_value('基本每股盈餘', occurrence=2),  # 取第二個
+                        '淨利率': extract_value('本期淨利（淨損）', column_index=2),  # 取第三列
+                        '本期淨利（淨損）': extract_value('本期淨利（淨損）'),
+                        'EPS': extract_value('基本每股盈餘', occurrence=2),  # 取第二個
                         '權益總額': extract_value('權益總額'),
                         '非流動資產合計': extract_value('非流動資產合計'),
                         '流動資產合計': extract_value('流動資產合計'),
@@ -190,10 +191,105 @@ def query_report(request):
                 combined_results.update({k: v for k, v in results_P.items() if v is not None})
                 combined_results.update({k: v for k, v in results_C.items() if v is not None})
 
-                # 在終端機上顯示提取的數據
-                print("提取的數據:")
+                # 計算額外的數據
+                calculations = {}
+                score_data = {} 
+                try:
+                    毛利率 = float(combined_results.get('毛利率', '0').replace(',', ''))
+
+                    if 毛利率 != 0:
+                        毛利率_20 = 毛利率 *  0.2
+                        毛利率_20 = f'{毛利率_20:.2f}'  
+                        score_data['毛利率_20'] = 毛利率_20
+
+                    營業利益率 = float(combined_results.get('營業利益率', '0').replace(',', ''))
+
+                    if 毛利率 and 營業利益率 != 0:
+                        經營安全邊際 = 毛利率 / 營業利益率
+                        if 經營安全邊際 > 0.6:
+                            經營安全邊際_20 = 20
+                        else:
+                            經營安全邊際_20 = 經營安全邊際 * (100 / 3)
+                            經營安全邊際_20 = f'{經營安全邊際_20:.2f}'
+                        calculations['經營安全邊際'] = f'{經營安全邊際:.2f}'
+                        score_data['經營安全邊際_20'] = 經營安全邊際_20
+                    else:
+                        經營安全邊際_20 = None
+                        calculations['經營安全邊際'] = None
+
+                          
+                    本期淨利 = float(combined_results.get('本期淨利（淨損）', '0').replace(',', ''))
+                    權益總額 = float(combined_results.get('權益總額', '0').replace(',', ''))
+                    淨利率 = float(combined_results.get('淨利率', '0').replace(',', ''))
+
+                    if 淨利率 != 0:
+                        淨利率_10 = 淨利率 *  0.1
+                        淨利率_10 = f'{淨利率_10:.2f}'
+                        score_data['淨利率_10'] = 淨利率_10
+
+                    EPS = float(combined_results.get('EPS', '0').replace(',', ''))
+                    if EPS != 0:
+                        EPS_10 = EPS * 0.1
+                        EPS_10 = f'{EPS_10:.2f}'  
+                        score_data['EPS_10'] = EPS_10
+
+                    if 本期淨利 and 權益總額 !=0:
+                        ROE = 本期淨利 / 權益總額
+                        if ROE > 0.2:
+                            ROE_20 = 20
+                        else:
+                            ROE_20 = ROE * 100
+                        ROE_20 = f'{ROE_20:.2f}'
+                        calculations['ROE'] = f'{ROE:.2f}'
+                        score_data['ROE_20'] = ROE_20
+                    
+                    負債總額 = float(combined_results.get('負債總額', '0').replace(',', ''))
+                    資產總額 = float(combined_results.get('資產總額', '0').replace(',', ''))
+
+                    if 負債總額 and 資產總額 !=0:
+                        財務槓桿 = 負債總額 / 資產總額
+                        calculations['財務槓桿'] = f'{財務槓桿:.2f}'
+
+                    現金及約當現金 = float(combined_results.get('現金及約當現金', '0').replace(',', ''))
+
+                    if 現金及約當現金 and 資產總額 !=0:
+                        現金及約當現金_資產總額 = 現金及約當現金 / 資產總額
+                        calculations['現金及約當現金_資產總額'] = f'{現金及約當現金_資產總額:.2f}'    
+
+                    應收帳款 = float(combined_results.get('應收帳款淨額', '0').replace(',', ''))
+                    營業收入 = float(combined_results.get('營業收入合計', '0').replace(',', ''))
+
+                    if 應收帳款 and 營業收入 !=0:
+                        應收帳款收現日 = 應收帳款/營業收入 *365
+                        calculations['應收帳款收現日'] = f'{應收帳款收現日:.2f}'
+
+                    # 計算總計
+                    total = 0
+                    for key in ['毛利率_20', '經營安全邊際_20', '淨利率_10', 'EPS_10', 'ROE_20']:
+                        value = score_data.get(key, 0)  # 預設值設為整數 0
+                        try:
+                            total += float(value)
+                        except ValueError:
+                            pass
+
+                    score_data['綜合損益表分數'] = f'{total:.2f}'
+
+
+                    
+                     
+
+                except ValueError as e:
+                    print(f"計算時發生錯誤: {e}")
+
+                # 合併計算結果
+                combined_results.update(calculations)
+
+
+                # 在終端機上顯示提取和計算的數據
+                print("提取和計算的數據:")
                 for key, value in combined_results.items():
                     print(f"{key}: {value}")
+
 
                 # 生成 HTML 表格
                 reports = [
@@ -205,6 +301,7 @@ def query_report(request):
                 # 將報表傳遞給模板
                 return render(request, 'display_reports.html', {
                     'reports': reports,
+                    'score_data': score_data,
                 })
             except Stock.DoesNotExist:
                 print('股票代碼不存在。')
