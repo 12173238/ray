@@ -77,7 +77,7 @@
             padding: 10px 12px;
             text-decoration: none;
             display: block;
-            text-align: left;
+            text-align: center;
             border-bottom: 1px solid #ddd;
             transition: background-color 0.3s ease;
         }
@@ -247,8 +247,11 @@
     <div class="score-container">
         {% if score_data.綜合損益表分數 %}
         <div class="score">
-            <h2>綜合損益表分數</h2>
-            <p>{{ score_data.綜合損益表分數 }}</p>
+            <h2>資產負債表分數 : {{ score_data.資產負債表分數 }}</h2>
+            <br>
+            <h2>綜合損益表分數 : {{ score_data.綜合損益表分數 }}</h2>
+            <br>
+            <h2>現金流量表分數 : {{ score_data.現金流量表分數 }}</h2>
         </div>
         {% endif %}
     </div>

@@ -173,6 +173,7 @@ def query_report(request):
                         'EPS': extract_value('基本每股盈餘', occurrence=2),  # 取第二個
                         '權益總額': extract_value('權益總額'),
                         '非流動資產合計': extract_value('非流動資產合計'),
+                        '非流動負債合計': extract_value('非流動負債合計'),
                         '流動資產合計': extract_value('流動資產合計'),
                         '流動負債合計': extract_value('流動負債合計'),
                         '發放現金股利': extract_value('發放現金股利'),
@@ -193,90 +194,241 @@ def query_report(request):
 
                 # 計算額外的數據
                 calculations = {}
-                score_data = {} 
+                score_data = {}
                 try:
                     毛利率 = float(combined_results.get('毛利率', '0').replace(',', ''))
-
-                    if 毛利率 != 0:
-                        毛利率_20 = 毛利率 *  0.2
-                        毛利率_20 = f'{毛利率_20:.2f}'  
-                        score_data['毛利率_20'] = 毛利率_20
-
                     營業利益率 = float(combined_results.get('營業利益率', '0').replace(',', ''))
+                    本期淨利 = float(combined_results.get('本期淨利（淨損）', '0').replace(',', ''))
+                    權益總額 = float(combined_results.get('權益總額', '0').replace(',', ''))
+                    淨利率 = float(combined_results.get('淨利率', '0').replace(',', ''))
+                    EPS = float(combined_results.get('EPS', '0').replace(',', ''))
+                    負債總額 = float(combined_results.get('負債總額', '0').replace(',', ''))
+                    資產總額 = float(combined_results.get('資產總額', '0').replace(',', ''))
+                    現金及約當現金 = float(combined_results.get('現金及約當現金', '0').replace(',', ''))
+                    應收帳款 = float(combined_results.get('應收帳款淨額', '0').replace(',', ''))
+                    營業收入 = float(combined_results.get('營業收入合計', '0').replace(',', ''))
+                    流動資產 = float(combined_results.get('流動資產合計', '0').replace(',', ''))
+                    存貨 = float(combined_results.get('存貨', '0').replace(',', ''))
+                    股利 = float(combined_results.get('發放現金股利', '0').replace(',', ''))
+                    非流動資產 = float(combined_results.get('非流動資產合計', '0').replace(',', ''))
+                    非流動負債 = float(combined_results.get('非流動負債合計', '0').replace(',', ''))
+                    流動負債 = float(combined_results.get('流動負債合計', '0').replace(',', ''))
 
-                    if 毛利率 and 營業利益率 != 0:
+                    # 確保 CSV 檔案路徑正確
+                    csv_file_path = os.path.join(os.path.dirname(__file__), 'csv', 'day.csv')
+
+                    # 檢查 CSV 檔案是否存在
+                    if os.path.exists(csv_file_path):
+                        # 讀取 CSV 檔案，指定編碼
+                        df_csv = pd.read_csv(csv_file_path, encoding='big5')
+                        
+                        # 確保 CSV 中包含 'code' 和 'day' 欄位
+                        if 'code' in df_csv.columns and 'day' in df_csv.columns:
+                            # 將 'code' 欄位轉換為數字型別
+                            df_csv['code'] = pd.to_numeric(df_csv['code'], errors='coerce')
+                            
+                            # 將使用者輸入的 stock_code 轉換為數字型別
+                            try:
+                                stock_code_numeric = float(stock_code)
+                            except ValueError:
+                                print(f"使用者輸入的 code '{stock_code}' 不是有效的數字。")
+                                stock_code_numeric = None
+                            
+                            if stock_code_numeric is not None:
+                                # 查找使用者輸入的 code 對應的行
+                                matching_rows = df_csv[df_csv['code'] == stock_code_numeric]
+
+                                # 檢查是否找到了對應的行
+                                if not matching_rows.empty:
+                                    # 取得對應的 'day' 欄位值
+                                    day= matching_rows['day'].values[0]  # 取得對應的 'day' 值
+                                    calculations['day'] = day
+                                else:
+                                    print(f"CSV 檔案中找不到 code '{stock_code}' 的數據")
+                            else:
+                                print("無法將使用者輸入的 code 轉換為數字。")
+                        else:
+                            print("CSV 檔案中找不到 'code' 或 'day' 欄位")
+                    else:
+                        print("CSV 檔案不存在")
+
+
+
+
+
+
+
+                    # 損益表
+                    if 毛利率 != 0:
+                        毛利率_20 = 毛利率 * 0.2
+                        score_data['毛利率_20'] = f'{毛利率_20:.2f}'
+
+                    if 營業利益率 != 0:
+                        營業利益率_20 = 營業利益率 * 0.2
+                        score_data['營業利益率_20'] = f'{營業利益率_20:.2f}'                    
+
+                    if (毛利率 != 0) and (營業利益率 != 0):
                         經營安全邊際 = 毛利率 / 營業利益率
                         if 經營安全邊際 > 0.6:
                             經營安全邊際_20 = 20
                         else:
                             經營安全邊際_20 = 經營安全邊際 * (100 / 3)
-                            經營安全邊際_20 = f'{經營安全邊際_20:.2f}'
                         calculations['經營安全邊際'] = f'{經營安全邊際:.2f}'
-                        score_data['經營安全邊際_20'] = 經營安全邊際_20
-                    else:
-                        經營安全邊際_20 = None
-                        calculations['經營安全邊際'] = None
-
-                          
-                    本期淨利 = float(combined_results.get('本期淨利（淨損）', '0').replace(',', ''))
-                    權益總額 = float(combined_results.get('權益總額', '0').replace(',', ''))
-                    淨利率 = float(combined_results.get('淨利率', '0').replace(',', ''))
+                        score_data['經營安全邊際_20'] = f'{經營安全邊際_20:.2f}'
 
                     if 淨利率 != 0:
-                        淨利率_10 = 淨利率 *  0.1
-                        淨利率_10 = f'{淨利率_10:.2f}'
-                        score_data['淨利率_10'] = 淨利率_10
+                        淨利率_10 = 淨利率 * 0.1
+                        score_data['淨利率_10'] = f'{淨利率_10:.2f}'
 
-                    EPS = float(combined_results.get('EPS', '0').replace(',', ''))
                     if EPS != 0:
                         EPS_10 = EPS * 0.1
-                        EPS_10 = f'{EPS_10:.2f}'  
-                        score_data['EPS_10'] = EPS_10
+                        score_data['EPS_10'] = f'{EPS_10:.2f}'
 
-                    if 本期淨利 and 權益總額 !=0:
+                    if (本期淨利 != 0) and (權益總額 != 0):
                         ROE = 本期淨利 / 權益總額
                         if ROE > 0.2:
                             ROE_20 = 20
                         else:
                             ROE_20 = ROE * 100
-                        ROE_20 = f'{ROE_20:.2f}'
                         calculations['ROE'] = f'{ROE:.2f}'
-                        score_data['ROE_20'] = ROE_20
-                    
-                    負債總額 = float(combined_results.get('負債總額', '0').replace(',', ''))
-                    資產總額 = float(combined_results.get('資產總額', '0').replace(',', ''))
+                        score_data['ROE_20'] = f'{ROE_20:.2f}'
 
-                    if 負債總額 and 資產總額 !=0:
+                    # 資產負債表
+                    if (負債總額 != 0) and (資產總額 != 0):
                         財務槓桿 = 負債總額 / 資產總額
+                        財務槓桿_50 = 財務槓桿 * 50
                         calculations['財務槓桿'] = f'{財務槓桿:.2f}'
+                        score_data['財務槓桿_50'] = f'{財務槓桿_50:.2f}'
 
-                    現金及約當現金 = float(combined_results.get('現金及約當現金', '0').replace(',', ''))
-
-                    if 現金及約當現金 and 資產總額 !=0:
+                    if (現金及約當現金 != 0) and (資產總額 != 0):
                         現金及約當現金_資產總額 = 現金及約當現金 / 資產總額
-                        calculations['現金及約當現金_資產總額'] = f'{現金及約當現金_資產總額:.2f}'    
+                        if 現金及約當現金_資產總額 < 0.1:
+                            現金及約當現金_資產總額_p = 0
+                        elif 現金及約當現金_資產總額 > 0.25:
+                            現金及約當現金_資產總額_p = (現金及約當現金_資產總額 - 0.25) * 5
+                        else:
+                            現金及約當現金_資產總額_p = 5
+                        calculations['現金及約當現金_資產總額'] = f'{現金及約當現金_資產總額:.2f}'
+                        score_data['現金及約當現金_資產總額_p'] = f'{現金及約當現金_資產總額_p:.2f}'
 
-                    應收帳款 = float(combined_results.get('應收帳款淨額', '0').replace(',', ''))
-                    營業收入 = float(combined_results.get('營業收入合計', '0').replace(',', ''))
-
-                    if 應收帳款 and 營業收入 !=0:
-                        應收帳款收現日 = 應收帳款/營業收入 *365
+                    if (應收帳款 != 0) and (營業收入 != 0):
+                        應收帳款收現日 = 應收帳款 / 營業收入 * 365
+                        應收帳款收現日_25 = 應收帳款收現日 * 0.25
                         calculations['應收帳款收現日'] = f'{應收帳款收現日:.2f}'
+                        score_data['應收帳款收現日_25'] = f'{應收帳款收現日_25:.2f}'
+
+
+
+                    # 讀取 day 值並進行條件檢查
+                    if 'day' in calculations:
+                        day_value = float(calculations['day'])
+                        
+                        # 半導體、電腦及週邊設備、電子零組件、光電業、其他電子通信網路
+                        if stock_code in ['2330', '2317', '2454', '2308', '2382', '3711', '2357', '3034','2412', '2395',
+                                          '3008', '2345', '2327', '3231', '2379', '4938','2301', '3661', '6669', '2207', 
+                                          '3017', '3045', '4904', '1590','5871', '2408']:
+                            if 60 <= day_value <= 90:
+                                day_25 = 25
+                                score_data['day_25'] = f'{day_25:.2f}'
+                            elif day_value < 60:
+                                day_25 = (day_value-60/50)*25
+                                score_data['day_25'] = f'{day_25:.2f}'
+                            else:
+                                day_25 = (day_value-90/90)*25
+                                score_data['day_25'] = f'{day_25:.2f}'
+                        #金融保險
+                        elif stock_code in ['2881', '2883', '2887', '2882', '2886', '2884', '2885', '2890','2892', '2880', '5880', '5876']:
+                                day_25 = 0
+                                score_data['day_25'] = f'{day_25:.2f}'
+                            
+                        #塑膠/鋼鐵
+                        elif stock_code in ['1303', '1301', '1326', '6505', '2002', '3037', '1101', '1216', '2912']:
+                            if 40 <= day_value <= 60:
+                                day_25 = 25
+                                score_data['day_25'] = f'{day_25:.2f}'
+                            elif day_value < 40:
+                                day_25 = (day_value-40/40)*25
+                                score_data['day_25'] = f'{day_25:.2f}'
+                            else:
+                                day_25 = (day_value-60/60)*25
+                                score_data['day_25'] = f'{day_25:.2f}'
+                        #食品    
+                        elif stock_code in ['1216', '2912']:
+                            if day_value < 15:
+                                day_25 = 25
+                                score_data['day_25'] = f'{day_25:.2f}'
+                            else:
+                                day_25 = 0
+                                score_data['day_25'] = f'{day_25:.2f}'        
+
+                        #其他
+                        else:
+                                day_25 = 0
+                                score_data['day_25'] = f'{day_25:.2f}'
+
+
+                    # 現金流量表
+                    if (現金及約當現金 != 0) and (流動資產 != 0):
+                        現金流量比率 = 現金及約當現金 / 流動資產
+                        if 現金流量比率 > 1:
+                            現金流量比率_10 = 10
+                        else:
+                            現金流量比率_10 = 現金流量比率 * 10
+                        calculations['現金流量比率'] = f'{現金流量比率:.2f}'
+                        score_data['現金流量比率_10'] = f'{現金流量比率_10:.2f}'
+
+                    if (現金及約當現金 != 0) and (存貨 != 0) and (股利 != 0):
+                        現金允當比率 = 現金及約當現金 / (存貨 + 股利)
+                        if 現金允當比率 > 1:
+                            現金允當比率_70 = 70
+                        else:
+                            現金允當比率_70 = 現金允當比率 * 70
+                        calculations['現金允當比率'] = f'{現金允當比率:.2f}'
+                        score_data['現金允當比率_70'] = f'{現金允當比率_70:.2f}'
+
+                    if (現金及約當現金 != 0) and (非流動資產 != 0) and (非流動負債 != 0) and (流動負債 != 0) and (流動資產 != 0) and (權益總額 != 0):
+                        現金再投資比率 = 現金及約當現金 / (非流動資產 +(非流動負債 + 權益總額) / 非流動資產 +(流動資產 - 流動負債))
+                        if 現金再投資比率 > 0.1:
+                            現金再投資比率_20 = 20
+                        else:
+                            現金再投資比率_20 = 現金再投資比率 * 2
+                        calculations['現金再投資比率'] = f'{現金再投資比率:.2f}'
+                        score_data['現金再投資比率_20'] = f'{現金再投資比率_20:.2f}'
+
 
                     # 計算總計
-                    total = 0
-                    for key in ['毛利率_20', '經營安全邊際_20', '淨利率_10', 'EPS_10', 'ROE_20']:
+                    B = 0
+                    for key in ['財務槓桿_50', '現金及約當現金_資產總額_p', '應收帳款收現日_25', 'day_25']:
                         value = score_data.get(key, 0)  # 預設值設為整數 0
                         try:
-                            total += float(value)
+                            B += float(value)
                         except ValueError:
                             pass
 
-                    score_data['綜合損益表分數'] = f'{total:.2f}'
+                    score_data['資產負債表分數'] = f'{B:.2f}' 
 
+                    P = 0
+                    for key in ['毛利率_20', '營業利益率_20', '經營安全邊際_20', '淨利率_10', 'EPS_10', 'ROE_20']:
+                        value = score_data.get(key, 0)  # 預設值設為整數 0
+                        try:
+                            P += float(value)
+                        except ValueError:
+                            pass
+
+                    score_data['綜合損益表分數'] = f'{P:.2f}'
+
+                    C = 0
+                    for key in ['現金流量比率_10', '現金允當比率_70', '現金再投資比率_20']:
+                        value = score_data.get(key, 0)  # 預設值設為整數 0
+                        try:
+                            C += float(value)
+                        except ValueError:
+                            pass
+
+                    score_data['現金流量表分數'] = f'{C:.2f}'
+                    
 
                     
-                     
 
                 except ValueError as e:
                     print(f"計算時發生錯誤: {e}")
@@ -290,6 +442,8 @@ def query_report(request):
                 for key, value in combined_results.items():
                     print(f"{key}: {value}")
 
+
+               
 
                 # 生成 HTML 表格
                 reports = [
