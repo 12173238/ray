@@ -214,43 +214,7 @@ def query_report(request):
                     非流動負債 = float(combined_results.get('非流動負債合計', '0').replace(',', ''))
                     流動負債 = float(combined_results.get('流動負債合計', '0').replace(',', ''))
 
-                    # 確保 CSV 檔案路徑正確
-                    csv_file_path = os.path.join(os.path.dirname(__file__), 'csv', 'day.csv')
 
-                    # 檢查 CSV 檔案是否存在
-                    if os.path.exists(csv_file_path):
-                        # 讀取 CSV 檔案，指定編碼
-                        df_csv = pd.read_csv(csv_file_path, encoding='big5')
-                        
-                        # 確保 CSV 中包含 'code' 和 'day' 欄位
-                        if 'code' in df_csv.columns and 'day' in df_csv.columns:
-                            # 將 'code' 欄位轉換為數字型別
-                            df_csv['code'] = pd.to_numeric(df_csv['code'], errors='coerce')
-                            
-                            # 將使用者輸入的 stock_code 轉換為數字型別
-                            try:
-                                stock_code_numeric = float(stock_code)
-                            except ValueError:
-                                print(f"使用者輸入的 code '{stock_code}' 不是有效的數字。")
-                                stock_code_numeric = None
-                            
-                            if stock_code_numeric is not None:
-                                # 查找使用者輸入的 code 對應的行
-                                matching_rows = df_csv[df_csv['code'] == stock_code_numeric]
-
-                                # 檢查是否找到了對應的行
-                                if not matching_rows.empty:
-                                    # 取得對應的 'day' 欄位值
-                                    day= matching_rows['day'].values[0]  # 取得對應的 'day' 值
-                                    calculations['day'] = day
-                                else:
-                                    print(f"CSV 檔案中找不到 code '{stock_code}' 的數據")
-                            else:
-                                print("無法將使用者輸入的 code 轉換為數字。")
-                        else:
-                            print("CSV 檔案中找不到 'code' 或 'day' 欄位")
-                    else:
-                        print("CSV 檔案不存在")
 
 
 
@@ -312,47 +276,85 @@ def query_report(request):
                         score_data['現金及約當現金_資產總額_p'] = f'{現金及約當現金_資產總額_p:.2f}'
 
                     if (應收帳款 != 0) and (營業收入 != 0):
-                        應收帳款收現日 = 應收帳款 / 營業收入 * 365
+                        應收帳款收現日 = (應收帳款 / 營業收入) * 365
                         應收帳款收現日_25 = 應收帳款收現日 * 0.25
+                        if 應收帳款收現日_25 > 25:
+                            應收帳款收現日_25 = 25
                         calculations['應收帳款收現日'] = f'{應收帳款收現日:.2f}'
                         score_data['應收帳款收現日_25'] = f'{應收帳款收現日_25:.2f}'
 
+                    # 確保 CSV 檔案路徑正確
+                    csv_file_path = os.path.join(os.path.dirname(__file__), 'csv', 'day.csv')
 
+                    # 檢查 CSV 檔案是否存在
+                    if os.path.exists(csv_file_path):
+                        # 讀取 CSV 檔案，指定編碼
+                        df_csv = pd.read_csv(csv_file_path, encoding='big5')
+                        
+                        # 確保 CSV 中包含 'code' 和 'day' 欄位
+                        if 'code' in df_csv.columns and 'day' in df_csv.columns:
+                            # 將 'code' 欄位轉換為數字型別
+                            df_csv['code'] = pd.to_numeric(df_csv['code'], errors='coerce')
+                            
+                            # 將使用者輸入的 stock_code 轉換為數字型別
+                            try:
+                                stock_code_numeric = float(stock_code)
+                            except ValueError:
+                                print(f"使用者輸入的 code '{stock_code}' 不是有效的數字。")
+                                stock_code_numeric = None
+                            
+                            if stock_code_numeric is not None:
+                                # 查找使用者輸入的 code 對應的行
+                                matching_rows = df_csv[df_csv['code'] == stock_code_numeric]
+
+                                # 檢查是否找到了對應的行
+                                if not matching_rows.empty:
+                                    # 取得對應的 'day' 欄位值
+                                    day= matching_rows['day'].values[0]  # 取得對應的 'day' 值
+                                    calculations['day'] = day
+                                else:
+                                    print(f"CSV 檔案中找不到 code '{stock_code}' 的數據")
+                            else:
+                                print("無法將使用者輸入的 code 轉換為數字。")
+                        else:
+                            print("CSV 檔案中找不到 'code' 或 'day' 欄位")
+                    else:
+                        print("CSV 檔案不存在")
 
                     # 讀取 day 值並進行條件檢查
                     if 'day' in calculations:
                         day_value = float(calculations['day'])
                         
                         # 半導體、電腦及週邊設備、電子零組件、光電業、其他電子通信網路
-                        if stock_code in ['2330', '2317', '2454', '2308', '2382', '3711', '2357', '3034','2412', '2395',
-                                          '3008', '2345', '2327', '3231', '2379', '4938','2301', '3661', '6669', '2207', 
-                                          '3017', '3045', '4904', '1590','5871', '2408']:
-                            if 60 <= day_value <= 90:
+                        if stock_code in ['2330', '2317', '2454', '2308', '2382', '3711', '2357', '3034', '2412', '2395',
+                                          '3008', '2345', '2327', '3231', '2379', '4938', '2301', '3661', '6669', '2207',
+                                          '3017', '3045', '4904', '1590', '5871', '2408']:
+                            if day_value < 60:
+                                day_25 = ((day_value - 60) / 50) * 25
+                                score_data['day_25'] = f'{day_25:.2f}'
+                            elif 60 <= day_value <= 90:
                                 day_25 = 25
                                 score_data['day_25'] = f'{day_25:.2f}'
-                            elif day_value < 60:
-                                day_25 = (day_value-60/50)*25
-                                score_data['day_25'] = f'{day_25:.2f}'
                             else:
-                                day_25 = (day_value-90/90)*25
+                                day_25 = ((day_value - 90) / 90) * 25
                                 score_data['day_25'] = f'{day_25:.2f}'
-                        #金融保險
-                        elif stock_code in ['2881', '2883', '2887', '2882', '2886', '2884', '2885', '2890','2892', '2880', '5880', '5876']:
-                                day_25 = 0
-                                score_data['day_25'] = f'{day_25:.2f}'
-                            
-                        #塑膠/鋼鐵
+                        # 金融保險
+                        elif stock_code in ['2881', '2883', '2887', '2882', '2886', '2884', '2885', '2890', '2892', '2880', '5880', '5876']:
+                            day_25 = 0
+                            score_data['day_25'] = f'{day_25:.2f}'
+                        
+                        # 塑膠/鋼鐵
                         elif stock_code in ['1303', '1301', '1326', '6505', '2002', '3037', '1101', '1216', '2912']:
                             if 40 <= day_value <= 60:
                                 day_25 = 25
                                 score_data['day_25'] = f'{day_25:.2f}'
                             elif day_value < 40:
-                                day_25 = (day_value-40/40)*25
+                                day_25 = ((day_value - 40) / 40) * 25
                                 score_data['day_25'] = f'{day_25:.2f}'
                             else:
-                                day_25 = (day_value-60/60)*25
+                                day_25 = ((day_value - 60) / 60) * 25
                                 score_data['day_25'] = f'{day_25:.2f}'
-                        #食品    
+                        # 食品    
                         elif stock_code in ['1216', '2912']:
                             if day_value < 15:
                                 day_25 = 25
@@ -361,10 +363,11 @@ def query_report(request):
                                 day_25 = 0
                                 score_data['day_25'] = f'{day_25:.2f}'        
 
-                        #其他
+                        # 其他
                         else:
-                                day_25 = 0
-                                score_data['day_25'] = f'{day_25:.2f}'
+                            day_25 = 0
+                            score_data['day_25'] = f'{day_25:.2f}'
+
 
 
                     # 現金流量表
@@ -398,34 +401,43 @@ def query_report(request):
 
                     # 計算總計
                     B = 0
+                    print("計算資產負債表分數:")
                     for key in ['財務槓桿_50', '現金及約當現金_資產總額_p', '應收帳款收現日_25', 'day_25']:
                         value = score_data.get(key, 0)  # 預設值設為整數 0
                         try:
                             B += float(value)
+                            print(f"{key}: {value}, 累加後的B: {B}")
                         except ValueError:
-                            pass
-
+                            print(f"{key}: 無效值 '{value}', 略過此項目")
                     score_data['資產負債表分數'] = f'{B:.2f}' 
+                    print(f"資產負債表分數: {score_data['資產負債表分數']}\n")
 
+                    # 計算綜合損益表分數
                     P = 0
+                    print("計算綜合損益表分數:")
                     for key in ['毛利率_20', '營業利益率_20', '經營安全邊際_20', '淨利率_10', 'EPS_10', 'ROE_20']:
                         value = score_data.get(key, 0)  # 預設值設為整數 0
                         try:
                             P += float(value)
+                            print(f"{key}: {value}, 累加後的P: {P}")
                         except ValueError:
-                            pass
-
+                            print(f"{key}: 無效值 '{value}', 略過此項目")
                     score_data['綜合損益表分數'] = f'{P:.2f}'
+                    print(f"綜合損益表分數: {score_data['綜合損益表分數']}\n")
 
+                    # 計算現金流量表分數
                     C = 0
+                    print("計算現金流量表分數:")
                     for key in ['現金流量比率_10', '現金允當比率_70', '現金再投資比率_20']:
                         value = score_data.get(key, 0)  # 預設值設為整數 0
                         try:
                             C += float(value)
+                            print(f"{key}: {value}, 累加後的C: {C}")
                         except ValueError:
-                            pass
-
+                            print(f"{key}: 無效值 '{value}', 略過此項目")
                     score_data['現金流量表分數'] = f'{C:.2f}'
+                    print(f"現金流量表分數: {score_data['現金流量表分數']}\n")
+
                     
 
                     
