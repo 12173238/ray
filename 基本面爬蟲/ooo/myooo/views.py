@@ -214,13 +214,48 @@ def query_report(request):
                     非流動資產 = float(combined_results.get('非流動資產合計', '0').replace(',', ''))
                     非流動負債 = float(combined_results.get('非流動負債合計', '0').replace(',', ''))
                     流動負債 = float(combined_results.get('流動負債合計', '0').replace(',', ''))
-
                     應收款項 = float(combined_results.get('應收款項－淨額', '0').replace(',', ''))
                     附賣回票券及債券投資 = float(combined_results.get('附賣回票券及債券投資', '0').replace(',', ''))
                     不動產及設備 = float(combined_results.get('不動產及設備－淨額', '0').replace(',', ''))
                     投資性不動產 = float(combined_results.get('投資性不動產－淨額', '0').replace(',', ''))
                     使用權資產 = float(combined_results.get('使用權資產－淨額', '0').replace(',', ''))
                     無形資產 = float(combined_results.get('無形資產－淨額', '0').replace(',', ''))
+
+
+                    #輸出值等於零的鍵
+                    # 新建一個字典來存放變數和值
+                    financial_data = {
+                        '毛利率': float(combined_results.get('毛利率', '0').replace(',', '')),
+                        '營業利益率': float(combined_results.get('營業利益率', '0').replace(',', '')),
+                        '本期淨利': float(combined_results.get('本期淨利（淨損）', '0').replace(',', '')),
+                        '權益總額': float(combined_results.get('權益總額', '0').replace(',', '')),
+                        '淨利率': float(combined_results.get('淨利率', '0').replace(',', '')),
+                        'EPS': float(combined_results.get('EPS', '0').replace(',', '')),
+                        '負債總額': float(combined_results.get('負債總額', '0').replace(',', '')),
+                        '資產總額': float(combined_results.get('資產總額', '0').replace(',', '')),
+                        '現金及約當現金': float(combined_results.get('現金及約當現金', '0').replace(',', '')),
+                        '應收帳款': float(combined_results.get('應收帳款淨額', '0').replace(',', '')),
+                        '營業收入': float(combined_results.get('營業收入合計', '0').replace(',', '')),
+                        '流動資產': float(combined_results.get('流動資產合計', '0').replace(',', '')),
+                        '存貨': float(combined_results.get('存貨', '0').replace(',', '')),
+                        '股利': float(combined_results.get('發放現金股利', '0').replace(',', '')),
+                        '非流動資產': float(combined_results.get('非流動資產合計', '0').replace(',', '')),
+                        '非流動負債': float(combined_results.get('非流動負債合計', '0').replace(',', '')),
+                        '流動負債': float(combined_results.get('流動負債合計', '0').replace(',', '')),
+                        '應收款項': float(combined_results.get('應收款項－淨額', '0').replace(',', '')),
+                        '附賣回票券及債券投資': float(combined_results.get('附賣回票券及債券投資', '0').replace(',', '')),
+                        '不動產及設備': float(combined_results.get('不動產及設備－淨額', '0').replace(',', '')),
+                        '投資性不動產': float(combined_results.get('投資性不動產－淨額', '0').replace(',', '')),
+                        '使用權資產': float(combined_results.get('使用權資產－淨額', '0').replace(',', '')),
+                        '無形資產': float(combined_results.get('無形資產－淨額', '0').replace(',', '')),
+                    }
+                    
+                    # 將值等於零的鍵連接成一行輸出在終端機
+                    zero_keys = [key for key, value in financial_data.items() if value == 0]
+                    if zero_keys:
+                        print(f"值等於零的鍵: {', '.join(zero_keys)}")
+
+
 
 
                     if 流動資產 == 0:
@@ -231,6 +266,42 @@ def query_report(request):
                     if 非流動資產 == 0:
                         非流動資產=不動產及設備 + 投資性不動產 + 使用權資產 + 無形資產
                         calculations['非流動資產'] = f'{非流動資產:.2f}'
+
+                    if 股利 == 0:
+                        csv_file_path = os.path.join(os.path.dirname(__file__), 'csv', 'day.csv')
+                        # 檢查 CSV 檔案是否存在
+                        if os.path.exists(csv_file_path):
+                            # 讀取 CSV 檔案，指定編碼
+                            df_csv = pd.read_csv(csv_file_path, encoding='big5')
+                            
+                            # 確保 CSV 中包含 'code' 和 'day' 欄位
+                            if 'code' in df_csv.columns and 'dividend' in df_csv.columns:
+                                # 將 'code' 欄位轉換為數字型別
+                                df_csv['code'] = pd.to_numeric(df_csv['code'], errors='coerce')
+                                
+                                # 將使用者輸入的 stock_code 轉換為數字型別
+                                try:
+                                    stock_code_numeric = float(stock_code)
+                                except ValueError:
+                                    print(f"使用者輸入的 code '{stock_code}' 不是有效的數字。")
+                                    stock_code_numeric = None
+                                
+                                if stock_code_numeric is not None:
+                                    # 查找使用者輸入的 code 對應的行
+                                    matching_rows = df_csv[df_csv['code'] == stock_code_numeric]
+
+                                    # 檢查是否找到了對應的行
+                                    if not matching_rows.empty:
+                                        股利= matching_rows['dividend'].values[0]  
+                                        calculations['股利'] = 股利
+                                    else:
+                                        print(f"CSV 檔案中找不到 code '{stock_code}' 的數據")
+                                else:
+                                    print("無法將使用者輸入的 code 轉換為數字。")
+                            else:
+                                print("CSV 檔案中找不到 'code' 或 'dividend' 欄位")
+                        else:
+                            print("CSV 檔案不存在")
 
                     # 損益表
                     if 毛利率 != 0:
@@ -450,10 +521,10 @@ def query_report(request):
 
                     
 
-                    
-
                 except ValueError as e:
                     print(f"計算時發生錯誤: {e}")
+
+
 
                 # 合併計算結果
                 combined_results.update(calculations)
@@ -463,9 +534,6 @@ def query_report(request):
                 print("提取和計算的數據:")
                 for key, value in combined_results.items():
                     print(f"{key}: {value}")
-
-
-               
 
                 # 生成 HTML 表格
                 reports = [
