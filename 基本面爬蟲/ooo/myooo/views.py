@@ -123,13 +123,7 @@ def query_report(request):
                 df_P = html_to_df(stock.P)
                 df_C = html_to_df(stock.C)
 
-                # 刪除名為 'Unnamed: 0_level_3' 的欄位，如果存在
-                if 'Unnamed: 0_level_3' in df_B.columns:
-                    df_B = df_B.drop(columns=['Unnamed: 0_level_3'])
-                if 'Unnamed: 0_level_3' in df_P.columns:
-                    df_P = df_P.drop(columns=['Unnamed: 0_level_3'])
-                if 'Unnamed: 0_level_3' in df_C.columns:
-                    df_C = df_C.drop(columns=['Unnamed: 0_level_3'])
+
 
                 # 根據實際需要刪除其他不必要的欄位
                 df_B = df_B.iloc[:, :-2]  # 根據實際需要調整
@@ -162,16 +156,16 @@ def query_report(request):
 
                     return {
                         '現金及約當現金': extract_value('現金及約當現金'),
-                        '負債總額': extract_value('負債總額'),
-                        '資產總額': extract_value('資產總額'),
-                        '應收帳款淨額': extract_value('應收帳款淨額'),  # 取第三列
-                        '營業收入合計': extract_value('營業收入合計'),
+                        '負債總額': extract_value('負債總額') or extract_value('負債總計'),
+                        '資產總額': extract_value('資產總額') or extract_value('資產總計'),
+                        '應收帳款淨額': extract_value('應收帳款淨額') or extract_value('應收款項－淨額'),  # 取第三列
+                        '營業收入合計': extract_value('營業收入合計') or extract_value('淨收益'),
                         '毛利率': extract_value('營業毛利（毛損）', column_index=2),  
                         '營業利益率': extract_value('營業利益（損失）', column_index=2),
-                        '淨利率': extract_value('本期淨利（淨損）', column_index=2),  # 取第三列
-                        '本期淨利（淨損）': extract_value('本期淨利（淨損）'),
+                        '淨利率': extract_value('本期淨利（淨損）', column_index=2) or extract_value('本期稅後淨利（淨損）', column_index=2),
+                        '本期淨利（淨損）': extract_value('本期淨利（淨損）') or extract_value('本期稅後淨利（淨損）'),
                         'EPS': extract_value('基本每股盈餘', occurrence=2),  # 取第二個
-                        '權益總額': extract_value('權益總額'),
+                        '權益總額': extract_value('權益總額') or extract_value('權益總計'),
                         '非流動資產合計': extract_value('非流動資產合計'),
                         '非流動負債合計': extract_value('非流動負債合計'),
                         '流動資產合計': extract_value('流動資產合計'),
@@ -179,7 +173,12 @@ def query_report(request):
                         '發放現金股利': extract_value('發放現金股利'),
                         '存貨': extract_value('存貨'),
 
-
+                        '應收款項－淨額': extract_value('應收款項－淨額'),
+                        '附賣回票券及債券投資': extract_value('附賣回票券及債券投資'),
+                        '不動產及設備－淨額': extract_value('不動產及設備－淨額'),
+                        '投資性不動產－淨額': extract_value('投資性不動產－淨額'),
+                        '使用權資產－淨額': extract_value('使用權資產－淨額'),
+                        '無形資產－淨額': extract_value('無形資產－淨額'),
 
                     }
 
@@ -216,14 +215,22 @@ def query_report(request):
                     非流動負債 = float(combined_results.get('非流動負債合計', '0').replace(',', ''))
                     流動負債 = float(combined_results.get('流動負債合計', '0').replace(',', ''))
 
+                    應收款項 = float(combined_results.get('應收款項－淨額', '0').replace(',', ''))
+                    附賣回票券及債券投資 = float(combined_results.get('附賣回票券及債券投資', '0').replace(',', ''))
+                    不動產及設備 = float(combined_results.get('不動產及設備－淨額', '0').replace(',', ''))
+                    投資性不動產 = float(combined_results.get('投資性不動產－淨額', '0').replace(',', ''))
+                    使用權資產 = float(combined_results.get('使用權資產－淨額', '0').replace(',', ''))
+                    無形資產 = float(combined_results.get('無形資產－淨額', '0').replace(',', ''))
 
 
+                    if 流動資產 == 0:
+                        # 計算流動負債的值 (假設你有其他計算方法，這裡以示例計算)
+                        流動資產 = 現金及約當現金 + 應收款項 + 附賣回票券及債券投資
+                        calculations['流動資產'] = f'{流動資產:.2f}'
 
-
-
-
-
-
+                    if 非流動資產 == 0:
+                        非流動資產=不動產及設備 + 投資性不動產 + 使用權資產 + 無形資產
+                        calculations['非流動資產'] = f'{非流動資產:.2f}'
 
                     # 損益表
                     if 毛利率 != 0:
@@ -392,7 +399,7 @@ def query_report(request):
                         calculations['現金允當比率'] = f'{現金允當比率:.2f}'
                         score_data['現金允當比率_70'] = f'{現金允當比率_70:.2f}'
 
-                    if (現金及約當現金 != 0) and (非流動資產 != 0) and (非流動負債 != 0) and (流動負債 != 0) and (流動資產 != 0) and (權益總額 != 0):
+                    if (現金及約當現金 != 0) and (非流動資產 != 0) and (權益總額 != 0):
                         現金再投資比率 = 現金及約當現金 / (非流動資產 +(非流動負債 + 權益總額) / 非流動資產 +(流動資產 - 流動負債))
                         if 現金再投資比率 > 0.1:
                             現金再投資比率_20 = 20
