@@ -25,8 +25,8 @@ urlpatterns = [
     # 设置根路径重定向到 query
     path('', RedirectView.as_view(url='/query/', permanent=True)),
     
-    path('query/', views.query_report, name='query_report'),  # 添加 name
-    path('update_reports/', views.update_reports, name='update_reports')  # 添加 name
+    path('query/', views.query_report, name='query_report'),  
+    path('update_reports/', views.update_reports, name='update_reports')  
 ]
 
 
